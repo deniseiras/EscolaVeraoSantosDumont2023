@@ -1,4 +1,4 @@
-# Escola de Verão Santos Dumont 2023
+# Santos Dumont Summer School 2023
 
 http://veraolncc.kinghost.net/
 
@@ -7,13 +7,13 @@ https://github.com/deniseiras/EscolaVeraoSantosDumont2023/nvidia_bootcamp
 
 ### Labs
 
-Foram executados dois Labs: F-MINST e Climate que também foram disponibilizados no colab em: 
+Two Labs were performed: F-MINST and Climate, which were also made available on the colab at:
 https://colab.research.google.com/drive/1iGfkeEbDQKaU7tmDigS_kR2O6P-SmPKQ?usp=sharing
-As alterações no Lab foram armazenadas na pasta nvidia_bootcamp/labs.
-- No Lab F-MINST foram variados os números de neurônios e camadas. Em seguida, foi usada uma rede convolucional 2d, que melhorou a acurácia de 0.78 para 0.90
-- O Lab Climate não foi executado por completo. Também disponibilizado em 
+Lab changes were stored in the nvidia_bootcamp/labs folder.
+- In Lab F-MINST the numbers of neurons and layers were varied. Then, a 2d convolutional network was used, which improved the accuracy from 0.78 to 0.90
+- Lab Climate was not fully executed. Also available at
 https://github.com/openhackathons-org/gpubootcamp/tree/master/hpc_ai
 
-### Hackaton
-- O Lab do Hackaton foi baseado na melhoria de uma rede UNET para predição de CFD (Computational Fluid Dynamics) . Foi executado no JupyterLab da NVIDIA (Competition.ipynb) e as alterações foram armazenadas na pasta nvidia/hackaton. 
-- O código também está disponível em https://github.com/openhackathons-org/gpubootcamp/tree/master/hpc_ai , onde se observa que é possível usar containeres também.
+### Hackathon
+- The Hackaton Lab was based on the improvement of a UNET network for CFD (Computational Fluid Dynamics) prediction. It was run on NVIDIA's JupyterLab (Competition.ipynb) and the changes were stored in the nvidia/hackaton folder.
+- The code is also available at https://github.com/openhackathons-org/gpubootcamp/tree/master/hpc_ai , where it is noted that it is possible to use containers as well.
