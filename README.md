@@ -19,13 +19,14 @@ Files and repos inside this repo (modified) and outside(original):
 - [MC_SD03_II - CUDA Aware intro](https://github.com/muriloboratto/MC-SD03-II)
 - [MC_SD04 - MPI Programming](https://github.com/gpsilva2003/mpi)
 
-Some notes
+[Some notes](https://github.com/deniseiras/EscolaVeraoSantosDumont2023/blob/main/sd_supercomputer_school/README.md)
 
 ## NVIDIA Bootcamp
 
 Files and repos inside this repo (modified) and outside(original):
 - https://github.com/deniseiras/EscolaVeraoSantosDumont2023/nvidia_bootcamp
 
+[Some notes](https://github.com/deniseiras/EscolaVeraoSantosDumont2023/blob/main/nvidia_bootcamp/README.md)
 ### Labs
 
 Two Labs were performed: F-MINST and Climate, which were also made available on the colab at:
