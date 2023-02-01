@@ -1,8 +1,26 @@
-# Santos Dumont Summer School 2023
+# Santos Dumont Summer Program 2023
 
+National Laboratory of Scientific Computing - LNCC
+January 16th to February 17th, 2023
 http://veraolncc.kinghost.net/
 
+---
+## Santos Dumond Supercomputer School
+http://veraolncc.kinghost.net/EscolaSDumont.php
+https://github.com/deniseiras/EscolaVeraoSantosDumont2023/sd_supercomputer_school
+
+TODO - organize repo
+
+---
+## Data Science Journey
+http://veraolncc.kinghost.net/JornadaCienciaDados.php
+https://github.com/deniseiras/EscolaVeraoSantosDumont2023/data_science_journey
+
+TODO - organize repo
+
+---
 ## NVIDIA Bootcamp
+
 https://github.com/deniseiras/EscolaVeraoSantosDumont2023/nvidia_bootcamp
 
 ### Labs
