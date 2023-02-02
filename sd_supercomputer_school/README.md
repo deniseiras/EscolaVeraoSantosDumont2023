@@ -506,3 +506,67 @@ catalog.ngc.nvidia.com
   - docker pull nvcr.io/nvidia/tensorflow:21.07  … (falta params)
 - docker run …
 - exibido um exemplo de segmentação 
+
+### DIA 5
+#### [MC-SD02-III] - Introdução a programação em aceleradores com diretivas
+exaflop.com.br/MC-SD02-III-sdumont_jan2023.tar.gz
+Acelerador: dispositivo que realiza cálculos matemáticos massivos, muito específico e externo ao conjunto CPU-memória
+nCores acelerador >>> nCores CPU
+OpenACC
+- aceleração para e pelos aceleradores
+- gde parte do código executado no host
+- regiões intensas são migrados para o host através de diretivas
+- um acelerador pode lançar paralelismo em gangs, que possui workers que podem executar operações vetoriais (vector)
+- não fazer sincronismo
+OpenMP
+- aceleração por threads, não por aceleração
+- modelo de memória mais complicado (CPU x target)
+- cada thread 1 memória
+- pode ou não serem sincronizadas
+- maior suporte de compiladores
+
+#### [SD04-II] Introdução a programação MPI com extensões para E/S
+http://www.lncc.br/~andrerc/mpi-io-lncc-2023.tar.gz
+
+MPI-IO
+- operações independentes e coletivas (recomendável)
+- coletivas:
+  - rearranja o padrão de acesso aos dados
+  - elimina trabalha duplicado de sobreposições de escrita em uma operação
+  - junta regiões para otimizar o two-fase IO
+- No curso: versão 3.0 (OpenMPI 4.0.3)
+- files
+  - view: trabalha com partes do arquivo - pode haver mais de uma view.
+  - ex. arqui 1 arqui 2 com view 1 ; arq 1 view 1 + view 2 , arq 2 view 1 + view 2
+  - pointer: pode ser único por processo ou compartilhado
+  - handle: ponteiro aberto com o MPI_Open e MPI_Close
+  - tipode fhandle MPI_READONLY, …. pode ser combinado, por exemplo com o tipo que gera um erro e o tipo readwrite
+
+
+Exercício
+write-i-offsets-character.c
+![Captura de tela de 2023-01-20 15-59-17.png](https://images.zenhubusercontent.com/6335d6f2d6d9bb4660047b43/9d4cb356-708e-455e-9d39-8a6166ad2967)
+
+Tipos de representação de dados (ex. na view:
+- native - usa a mesma representação da memóira
+- internal - depende da impl. MPI - faz conversão dos dados se necessário
+- internal32 - garante a interoperabilidade - IEEE - perda de performance
+Exercício
+write-i-ifp-double-buffer.c
+![Captura de tela de 2023-01-20 16-53-53.png](https://images.zenhubusercontent.com/6335d6f2d6d9bb4660047b43/ff4e5836-0508-47cf-a0fb-4ef3fa067f39)
+testar / TO-DO testar internal e internal 32 
+![Captura de tela de 2023-01-20 17-25-33.png](https://images.zenhubusercontent.com/6335d6f2d6d9bb4660047b43/b93427d1-e01b-45c3-a50a-8b49f83b068e)
+********
+
+cont. figura:
+![Captura de tela de 2023-01-20 17-28-47.png](https://images.zenhubusercontent.com/6335d6f2d6d9bb4660047b43/4098f987-508a-4729-be24-0a698ac298c9)
+
+desafio. Tentar escrever o tipo ao inves dos 16x4
+
+Desafio fractal Julia - slides: fazer a escrita em paralelo
+
+Outros exercícios:
+- hands-on de HINTS. (Usar OpenMPI 2.x !)
+- stripes - julia set
+
+as soluções estão no final do slide
