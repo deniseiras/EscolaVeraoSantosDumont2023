@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --nodes=1                      #Numero de Nós
+#SBATCH --ntasks-per-node=1            #Numero de tarefas por Nó
+#SBATCH --ntasks=1                     #Numero total de tarefas MPI
+#SBATCH --cpus-per-task=48             #Numero de threads
+#SBATCH -p sequana_cpu_dev             #Fila (partition) a ser utilizada
+#SBATCH --time=5:00                    #Tempo do job
+#SBATCH --exclusive
+
+#Exibe os nós alocados para o Job
+echo "Running on $SLURM_JOB_NODELIST"
+
+cd $SLURM_SUBMIT_DIR
+
+#Configura os compiladores
+module load gcc/8.3
+
+#Configura o executavel
+EXEC="$SCRATCH/2-vsum.exec 50"
+
+#configura o numero de threads, de acordo com o parametro definido no Slurm
+#export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+export OMP_NUM_THREADS=$1
+echo "executando com $OMP_NUM_THREADS Threads ..."
+lscpu
+
+srun -N 1 -c $1 $EXEC

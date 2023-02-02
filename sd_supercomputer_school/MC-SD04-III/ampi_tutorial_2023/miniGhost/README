@@ -1,0 +1,294 @@
+------------------
+| Tutorial Goals |
+------------------
+
+- Learn how to build and run AMPI programs.
+
+- Learn how to privatize an existing Fortran MPI program to run with
+  virtualization on AMPI.
+
+
+------------------
+| Compiling AMPI |
+------------------
+
+********
+On iForge, we have provided you a pre-built installation of Charm++/AMPI so you
+can ignore this section. However you must load the following environment:
+
+module unload mvapich2-1.7rc1-intel-12.0.4
+module unload intel/12.0.4
+module load gcc/5.4.0
+********
+
+To build AMPI with Fortran bindings, specify the compiler to the
+build script, as in one of the following:
+
+On a Linux workstation with gfortran:
+
+  ./build AMPI netlrts-linux-x86_64 gfortran gcc -j16 --with-production -g -O2
+
+Linux workstation with ifort:
+
+  ./build AMPI netlrts-linux-x86_64 ifort icc -j16 --with-production -g -O2
+
+Infiniband cluster with gfortran:
+
+  ./build AMPI verbs-linux-x86_64 gfortran gcc -j16 --with-production -g -O2
+
+Omni-Path cluster:
+
+  ./build AMPI ofi-linux-x86_64 ifort icc -j16 --with-production -g -O2
+
+Cray XC system (first load the PrgEnv-* for the compilers you want):
+
+  ./build AMPI gni-crayxc -j16 --with-production -g -O2
+
+
+-----------------------
+| Compiling MiniGhost |
+-----------------------
+
+To compile miniGhost on AMPI, first edit makefile.mpi to point
+CHARM_DIR to your Charm++/AMPI installation directory. By default, it already points
+to the installation on iForge. By default this makefile is set up to use gfortran.
+If using ifort or another compiler you need to change the free format flag in the
+makefile.
+Then do:
+
+  make -f makefile.mpi
+
+That will create an executable named miniGhost.x
+
+
+---------------------
+| Running MiniGhost |
+---------------------
+
+********
+* If you are using iForge, it is not good practice to run jobs on the login
+  node. After building your program, enter the following to request an
+  interactive shell on a compute node.
+    $ qsub -I
+
+  Once the allocation has been provided, follow the exercise's instructions for
+  running the program.
+
+  Compute nodes are a shared, limited resource, so make sure to exit the shell
+  once your program runs are complete:
+    $ exit
+********
+
+Before running an AMPI program built with gfortran, we must
+set this environment variable:
+
+  export GFORTRAN_UNBUFFERED_ALL=1
+
+Then you can run MiniGhost in the following ways:
+
+Serial:
+
+  ./miniGhost.x
+
+Parallel:
+
+  ./charmrun +p 1 ./miniGhost.x +vp 1 --nx 200 --ny 200 --nz 200 +isomalloc_sync ++local
+
+Parallel, with 8x overdecomposition (Note: this requires
+privatization of global variables, explained below):
+
+  ./charmrun +p 1 ./miniGhost.x +vp 8 --npx 2 --npy 2 --npz 2 --nx 100 --ny 100 --nz 100 +isomalloc_sync ++local
+
+Note that the problem size (defined by the --n{x,y,z} options) is fixed
+per MPI rank by default (weak scaling), so we need to cut the size of
+each local domain as we overdecompose into more ranks in order to keep
+the global problem size constant. The --np{x,y,z} options specify the
+decomposition along each dimension.
+
+
+-----------------
+| Privatization |
+-----------------
+
+AMPI virtualizes the ranks of MPI_COMM_WORLD as user-level threads rather
+than OS processes. This means that global variables are shared between
+multiple AMPI ranks, rather than private to each rank.
+All global variables that are written to more than once and which are
+not written to the same value on all MPI ranks must be encapsulated.
+All PARAMETER variables are safe, as are many globals that are
+store global input values that are written to only once at startup.
+Note that module variables, as well as explicit and implicit
+SAVE variables are all forms of global variables.
+
+In order to privatize global variables of all kinds in Fortran programs,
+we encapsulate the variables in a derived type which is allocated per
+(A)MPI rank, and then all references to those variables must be updated
+to access them through the derived type.
+
+You can find more information on privatization in the AMPI manual here:
+http://charm.cs.illinois.edu/manuals/html/ampi/manual.html
+
+
+
+This tutorial by default includes two already-privatized versions of
+the source code:
+  1. The encapsulated/ directory contains a version which has been
+     manually refactored to not use mutable global state.
+  2. The tlsglobals/ directory contains a version which has been modified
+     using AMPI's support for TLS global variable privatization.
+
+These two approaches are explained in greater detail here.
+The rest of this section contains information on the privatization done
+for this tutorial. For the manual encapsulation approach, we move all
+unsafe global variables into a MG_GLOBALS derived type defined in
+MG_CONSTANTS.F, allocate that structure on the stack in main, and
+pass it through to all routines that need it. For TLS globals, we
+simply tag all declarations of mutable global/static variables with
+OpenMP's threadprivate attribute, such as the following:
+
+  INTEGER :: VARIABLE
+  !$omp threadprivate(VARIABLE)
+
+
+In MiniGhost, there are 88 global variables in total declared
+in 4 files. 60 of these variables must be privatized to
+enable running with overdecomposition (the other 28 are safe).
+
+Privatization by file & variable:
+
+main.c:
+      numpes    ! Global variables is written once, then final
+
+MG_CONSTANTS.F:
+      mype
+      GLOBAL_NX ! Global variables is written once, then final
+      GLOBAL_NY ! Global variables is written once, then final
+      GLOBAL_NZ ! Global variables is written once, then final
+      MY_GLOBAL_NX_START
+      MY_GLOBAL_NY_START
+      MY_GLOBAL_NZ_START
+      MY_GLOBAL_NX_END
+      MY_GLOBAL_NY_END
+      MY_GLOBAL_NZ_END
+      NUM_NEIGHS
+      NUM_SUM_GRID
+      MYPE
+      NUMPES      ! Global variables is written once, then final
+      MPI_COMM_MG ! Global variables is written once, then final
+      MYPX
+      MYPY
+      MYPZ
+      ERROR_TOL
+      GRIDS_TO_SUM
+      SPIKE_LOC
+      FLUX_OUT
+      SOURCE_TOTAL
+      SPIKES
+      WORK
+      MAX_NUM_SENDS
+      MAX_NUM_RECVS
+      NUM_RECVS
+      NUM_SENDS
+      COUNT_RECV_BACK
+      COUNT_RECV_FRONT
+      COUNT_RECV_EAST
+      COUNT_RECV_WEST
+      COUNT_RECV_NORTH
+      COUNT_RECV_SOUTH
+      COUNT_SEND_BACK
+      COUNT_SEND_FRONT
+      COUNT_SEND_EAST
+      COUNT_SEND_WEST
+      COUNT_SEND_NORTH
+      COUNT_SEND_SOUTH
+      RECV_BUFFER_NORTH_SIZE
+      RECV_BUFFER_SOUTH_SIZE
+      RECV_BUFFER_EAST_SIZE
+      RECV_BUFFER_WEST_SIZE
+      RECV_BUFFER_BACK_SIZE
+      RECV_BUFFER_FRONT_SIZE
+      SEND_BUFFER_NORTH_SIZE
+      SEND_BUFFER_SOUTH_SIZE
+      SEND_BUFFER_EAST_SIZE
+      SEND_BUFFER_WEST_SIZE
+      SEND_BUFFER_BACK_SIZE
+      SEND_BUFFER_FRONT_SIZE
+      MSG_REQS
+      MSG_TAGS
+      NEIGHBORS
+      NEIGHBORS_ORIG
+      RECV_BUFFER_BACK
+      RECV_BUFFER_FRONT
+      RECV_BUFFER_EAST
+      RECV_BUFFER_WEST
+      RECV_BUFFER_NORTH
+      RECV_BUFFER_SOUTH
+      RESTART_FIRST_PASS
+      STARTING_TSTEP
+      STARTING_SPIKE
+
+MG_OPTIONS.F: (All are written once, then final)
+      SCALING
+      COMM_METHOD
+      STENCIL
+      BC
+      NX
+      NY
+      NZ
+      NPX
+      NPY
+      NPZ
+      NVARS
+      NTSTEPS
+      NSPIKES
+      PERCENT_SUM
+      DEBUG_GRID
+      REPORT_DIFFUSION
+      REPORT_PERF
+      CP_METHOD
+      CP_INTERVAL
+      RESTART_CP_NUM
+      CP_FILE
+      RESTART_FILE
+
+MG_PROFILING.F
+      MG_PERF_INIT_MIN ! Unused global variable
+
+
+------------------
+| Load Balancing |
+------------------
+
+AMPI supports dynamic load balancing via runtime migration
+of virtual ranks and all their state between address spaces.
+The runtime can continuously monitor the load on each core
+as well as communication statistics for use in load balancing.
+Load balancing strategies can also take into account different
+hardware parameters of the system or job partition.
+
+To enable load balancing, the user must insert a call
+to "AMPI_Migrate(AMPI_INFO_LB_SYNC);" somewhere in the
+program's main iterative function. This tells the runtime
+system that it may perform load balancing, though it may
+choose not to if it doesn't think it will be profitable.
+The strategy that makes the load balancing decisions is
+a runtime parameter. Charm++/AMPI come with many built-in
+strategies, and users can write their own.
+
+To get started, add a call to AMPI_Migrate after
+10 iterations. Then add "-memory isomalloc -module CommonLBs"
+to the LDFLAGS in makefile.mpi and rebuild MiniGhost.
+Finally, specify a load balancing strategy, such as RefineLB,
+to the +balancer command line argument when running the program:
+
+  ./charmrun +p 8 ./miniGhost.x +vp 64 ++local +balancer RefineLB +isomalloc_sync
+
+The '+isomalloc_sync' flag is only needed on systems with
+Address Space Layout Randomization turned on in the OS kernel.
+
+*******
+NOTE: MiniGhost by default does not exhibit load imbalance, though
+your hardware may induce some imbalance or one could add artificial imbalance
+to test AMPI's load balancing efficiency.
+*******
+

@@ -1,0 +1,126 @@
+Intel(R) Advisor can now assist with vectorization and show optimization
+  report messages with your source code.
+See "https://software.intel.com/en-us/intel-advisor-xe" for details.
+
+Intel(R) C Intel(R) 64 Compiler Classic for applications running on Intel(R) 64, Version 2021.5.0 Build 20211109_000000
+
+Compiler options: -qopt-report=5 -no-vec -qopenmp -xHost -Wall -Wextra -c -o main.o
+
+    Report from: Interprocedural optimizations [ipo]
+
+  WHOLE PROGRAM (SAFE) [EITHER METHOD]: false
+  WHOLE PROGRAM (SEEN) [TABLE METHOD]: false
+  WHOLE PROGRAM (READ) [OBJECT READER METHOD]: false
+
+INLINING OPTION VALUES:
+  -inline-factor: 100
+  -inline-min-size: 30
+  -inline-max-size: 230
+  -inline-max-total-size: 2000
+  -inline-max-per-routine: 10000
+  -inline-max-per-compile: 500000
+
+In the inlining report below:
+   "sz" refers to the "size" of the routine. The smaller a routine's size,
+      the more likely it is to be inlined.
+   "isz" refers to the "inlined size" of the routine. This is the amount
+      the calling routine will grow if the called routine is inlined into it.
+      The compiler generally limits the amount a routine can grow by having
+      routines inlined into it.
+
+Begin optimization report for: main(int, char **)
+
+    Report from: Interprocedural optimizations [ipo]
+
+INLINE REPORT: (main(int, char **)) [1/2=50.0%] main.c(7,32)
+  -> EXTERN: (14,3) fprintf(FILE *__restrict__, const char *__restrict__, ...)
+  -> EXTERN: (15,3) exit(int)
+  -> INLINE (MANUAL): (18,6) atoi(const char *) (isz = 4) (sz = 11)
+    -> EXTERN: /usr/include/stdlib.h:(280,16) strtol(const char *__restrict__, char **__restrict__, int)
+  -> EXTERN: (22,2) printf(const char *__restrict__, ...)
+  -> EXTERN: (24,14) _mm_malloc(unsigned long long, unsigned long long)
+  -> EXTERN: (26,3) fprintf(FILE *__restrict__, const char *__restrict__, ...)
+  -> EXTERN: (27,3) exit(int)
+  -> EXTERN: (30,14) _mm_malloc(unsigned long long, unsigned long long)
+  -> EXTERN: (32,3) fprintf(FILE *__restrict__, const char *__restrict__, ...)
+  -> EXTERN: (33,3) exit(int)
+  -> EXTERN: (36,14) _mm_malloc(unsigned long long, unsigned long long)
+  -> EXTERN: (38,3) fprintf(FILE *__restrict__, const char *__restrict__, ...)
+  -> EXTERN: (39,3) exit(int)
+  -> EXTERN: (49,10) omp_get_wtime(void)
+  -> EXTERN: (50,2) matrix_mult(double *, double *, double *, int)
+  -> EXTERN: (51,8) omp_get_wtime(void)
+  -> EXTERN: (64,2) printf(const char *__restrict__, ...)
+  -> EXTERN: (66,2) _mm_free(void *)
+  -> EXTERN: (67,2) _mm_free(void *)
+  -> EXTERN: (68,2) _mm_free(void *)
+
+
+    Report from: Loop nest, Vector & Auto-parallelization optimizations [loop, vec, par]
+
+
+LOOP BEGIN at main.c(42,2)
+   remark #15541: outer loop was not auto-vectorized: consider using SIMD directive
+
+   LOOP BEGIN at main.c(43,3)
+      remark #15540: loop was not vectorized: auto-vectorization is disabled with -no-vec flag
+      remark #25439: unrolled with remainder by 2  
+   LOOP END
+
+   LOOP BEGIN at main.c(43,3)
+   <Remainder>
+   LOOP END
+LOOP END
+
+
+Non-optimizable loops:
+
+
+LOOP BEGIN at main.c(56,2)
+   remark #15536: loop was not vectorized: inner loop throttling prevents vectorization of this outer loop. Refer to inner loop message for more details.   [ main.c(57,3) ]
+
+   LOOP BEGIN at main.c(57,3)
+      remark #15523: loop was not vectorized: loop control variable i was found, but loop iteration count cannot be computed before executing the loop
+   LOOP END
+LOOP END
+
+    Report from: Code generation optimizations [cg]
+
+main.c(7,32):remark #34051: REGISTER ALLOCATION : [main] main.c:7
+
+    Hardware registers
+        Reserved     :    2[ rsp rip]
+        Available    :   39[ rax rdx rcx rbx rbp rsi rdi r8-r15 mm0-mm7 zmm0-zmm15]
+        Callee-save  :    6[ rbx rbp r12-r15]
+        Assigned     :   17[ rax rdx rcx rbx rsi rdi r8-r12 r14-r15 zmm0-zmm3]
+        
+    Routine temporaries
+        Total         :     123
+            Global    :      40
+            Local     :      83
+        Regenerable   :      37
+        Spilled       :       5
+        
+    Routine stack
+        Variables     :      20 bytes*
+            Reads     :       3 [1.43e-01 ~ 0.1%]
+            Writes    :       4 [3.07e-01 ~ 0.3%]
+        Spills        :       8 bytes*
+            Reads     :       1 [1.43e-01 ~ 0.1%]
+            Writes    :       1 [1.43e-01 ~ 0.1%]
+    
+    Notes
+    
+        *Non-overlapping variables and spills may share stack space,
+         so the total stack size might be less than this.
+    
+
+===========================================================================
+
+Begin optimization report for: atoi(const char *)
+
+    Report from: Interprocedural optimizations [ipo]
+
+NEVER EMIT DEFINITION FUNCTION: (atoi(const char *))/usr/include/stdlib.h(279,1)
+
+===========================================================================

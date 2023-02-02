@@ -1,0 +1,86 @@
+---------------------------
+| Exercise 1. AMPI Lulesh |
+---------------------------
+
+  This exercise provides an introduction to Adaptive MPI for users familiar
+with MPI. The steps below demonstrate how to augment an MPI program with the
+load balancing capabilities of AMPI.
+
+  Use the provided skeleton folder for your work.
+
+********
+On iForge, we have provided you a pre-built installation of Charm++/AMPI so you
+can ignore this section. However you must load the following environment:
+
+module unload mvapich2-1.7rc1-intel-12.0.4
+module unload intel/12.0.4
+module load gcc/5.4.0
+********
+
+1. Compiling an AMPI Program
+----------------------------
+To build LULESH on AMPI:
+
+  1. Point AMPICXX in Makefile to your charm/bin/ampicxx. It should already be correct on iForge.
+
+     a. Optionally turn on load balancing and/or Projections tracing via AMPI_LB
+        and AMPI_PROJ in Makefile. They are both on by default.
+
+  2. Run 'make'
+
+2. Running an AMPI Program
+--------------------------
+
+********
+* If you are using iForge, it is not good practice to run jobs on the login
+  node. After building your program, enter the following to request an
+  interactive shell on a compute node.
+    $ qsub -I
+
+  Once the allocation has been provided, follow the exercise's instructions for
+  running the program.
+
+  Compute nodes are a shared, limited resource, so make sure to exit the shell
+  once your program runs are complete:
+    $ exit
+********
+
+To run LULESH on AMPI:
+
+  1. Without virtualization (on 8 PEs, using 8 VPs, a domain of size 20x20x20
+      per rank, 100 iterations, load imbalance 3 with cost of 50).
+     Note: +isomalloc_sync is only needed on system with Address Space Layout
+      Randomization turned on in the kernel and for SMP builds of AMPI.
+
+     ./charmrun +p 8 ./lulesh_ampi +vp 8  -s 20 -i 100 -c 50 -b 3 +isomalloc_sync ++local
+
+  2. Same global problem size as above, but with 8x virtualization.
+     Note: LULESH requires a cubic number of MPI ranks, and the '-s' option
+      specifies the size in one dimension of the cubic subdomain assigned to
+      each rank.
+
+     ./charmrun +p 8 ./lulesh_ampi +vp 64 -s 20 -i 100 -c 50 -b 3 +isomalloc_sync ++local
+
+3. Add calls to MPI_Migrate
+---------------------------
+  This version of LULESH does not contain calls to AMPI_Migrate(MPI_Info). You
+will need to create the info object and insert a call to AMPI_Migrate. You can
+use "#ifdef AMPI" to surround calls to AMPI extension routines. Edit lulesh.cc
+to add a call to AMPI_Migrate(). The places you will need to edit are commented
+with "TODO", so you can search for them in lulesh.cc
+
+4. Run with dynamic load balancing
+----------------------------------
+  1. Run 'make'
+
+  2. Same as above, but with dynamic load balancing (GreedyLB strategy):
+
+     ./charmrun +p 8 ./lulesh_ampi +vp 64 -s 20 -i 100 -c 50 -b 3 +isomalloc_sync +balancer GreedyLB ++local
+
+5. Examine Projections
+----------------------
+  We'll come back to this in ex3-1 and if you're ahead you can look at the
+instructions for running projections there.
+
+* The solution code can be found under ex1/solution. All AMPI-specific code is
+  guarded by '#ifdef AMPI'.
